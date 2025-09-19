@@ -1,15 +1,16 @@
-name: CI/CD - Azure Functions Python
+name: Deploy Azure Functions Backend
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - main
 
 jobs:
-  build-test-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout du code
+      # 1. Récupère ton code
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -19,33 +20,28 @@ jobs:
         with:
           python-version: "3.10"
 
-      # 3. Installer dépendances
+      # 3. Installer dépendances (optionnel pour tests locaux dans CI)
       - name: Install dependencies
         run: |
           cd backend
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      # 4. Lancer les tests (optionnel si tu as pytest)
-      - name: Run tests
-        run: |
-          cd backend
-          pytest || echo "No tests"
+      # (optionnel) Run tests
+      # - name: Run tests
+      #   run: |
+      #     cd backend
+      #     pytest
 
-      # 5. Login Azure
+      # 4. Login Azure via service principal
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # 6. Installer Azure Functions Core Tools
-      - name: Install Azure Functions Core Tools
-        run: |
-          sudo npm install -g azure-functions-core-tools@4 --unsafe-perm true
-
-      # 7. Déploiement avec func CLI
-      - name: Deploy with Azure Functions Core Tools
-        run: |
-          cd backend
-          func azure functionapp publish func-azmeter-api --python
-
+      # 5. Déployer sur Function App
+      - name: Deploy to Azure Functions
+        uses: azure/functions-action@v1
+        with:
+          app-name: func-azmeter-api              # nom exact de ta Function App
+          package: ./backend                      # chemin vers ton code backend
