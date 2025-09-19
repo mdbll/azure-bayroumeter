@@ -1,38 +1,46 @@
-name: Deploy Backend (Azure Functions Python)
+name: CI/CD - Weather Functions
 
 on:
   push:
-    branches:
-      - main   # déploiement à chaque push sur main
+    branches: ["main"]
 
 jobs:
-  build-and-deploy:
+  build-test-deploy:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: backend   # toutes les commandes se lancent dans backend/
+        working-directory: backend   # toutes les commandes s'exécutent dans backend/
 
     steps:
+      # 1. Checkout du code
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # 2. Setup Python
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          python-version: "3.10"   # ajuste à ta version locale
+          python-version: "3.10"
 
+      # 3. Installer dépendances
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # 4. Lancer les tests
+      - name: Run tests
+        run: pytest
+
+      # 5. Login Azure
       - name: Azure Login
         uses: azure/login@v1
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # 6. Déployer la Function App
       - name: Deploy to Azure Functions
-        uses: Azure/functions-action@v1
+        uses: azure/functions-action@v1
         with:
-          app-name: func-azmeter-api   # ⚡ le nom exact de ton Function App
-          package: ./backend           # 👉 important, déploie uniquement ton backend
+          app-name: ${{ secrets.FUNCTIONAPP_NAME }}
+          package: ./backend     # ← déploie uniquement ton backend
