@@ -1,4 +1,4 @@
-name: CI/CD - Weather Functions
+name: CI/CD - Azure Functions
 
 on:
   push:
