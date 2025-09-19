@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: 'backend' # dossier backend uniquement
+  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # chemin du projet (ici racine)
   PYTHON_VERSION: '3.10'
 
 jobs:
@@ -25,21 +25,16 @@ jobs:
         with:
           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Create and start virtual environment
-        run: |
-          python -m venv venv
-          source venv/bin/activate
-
       - name: Install dependencies
-        run: pip install -r backend/requirements.txt  # <--- ici
+        run: |
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      # Optional: Add step to run tests here
+      # Optionnel : lance tes tests ici si besoin
+      # - name: Run tests
+      #   run: pytest
 
       - name: Zip artifact for deployment
-        run: |
-          cd backend
-          zip -r ../release.zip ./*
-          cd ..
+        run: zip release.zip ./* -r -x "venv/*"
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -66,16 +61,12 @@ jobs:
           rm release.zip
 
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: azure/login@v1
         with:
-          client-id: ${{ secrets.__clientidsecretname__ }}
-          tenant-id: ${{ secrets.__tenantidsecretname__ }}
-          subscription-id: ${{ secrets.__subscriptionidsecretname__ }}
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: 'Deploy to Azure Functions'
+      - name: Deploy to Azure Functions
         uses: Azure/functions-action@v1
-        id: deploy-to-function
         with:
-          app-name: 'func-azmeter-api'
-          slot-name: 'Production'
+          app-name: func-azmeter-api
           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
