@@ -1,72 +1,72 @@
-name: Build and deploy Python project to Azure Function App - func-azmeter-api
+# name: Build and deploy Python project to Azure Function App - func-azmeter-api
 
-on:
-  push:
-    branches:
-      - main
-  workflow_dispatch:
+# on:
+#   push:
+#     branches:
+#       - main
+#   workflow_dispatch:
 
-env:
-  AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # chemin du projet (ici racine)
-  PYTHON_VERSION: '3.10'
+# env:
+#   AZURE_FUNCTIONAPP_PACKAGE_PATH: '.' # chemin du projet (ici racine)
+#   PYTHON_VERSION: '3.10'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: read
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: Setup Python version
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
+#       - name: Setup Python version
+#         uses: actions/setup-python@v5
+#         with:
+#           python-version: ${{ env.PYTHON_VERSION }}
 
-      - name: Install dependencies
-        run: |
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+#       - name: Install dependencies
+#         run: |
+#           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
-      # Optionnel : lance tes tests ici si besoin
-      # - name: Run tests
-      #   run: pytest
+#       # Optionnel : lance tes tests ici si besoin
+#       # - name: Run tests
+#       #   run: pytest
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r -x "venv/*"
+#       - name: Zip artifact for deployment
+#         run: zip release.zip ./* -r -x "venv/*"
 
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: release.zip
+#       - name: Upload artifact for deployment job
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: python-app
+#           path: release.zip
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    permissions:
-      id-token: write
-      contents: read
+#   deploy:
+#     runs-on: ubuntu-latest
+#     needs: build
+#     permissions:
+#       id-token: write
+#       contents: read
 
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
+#     steps:
+#       - name: Download artifact from build job
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: python-app
 
-      - name: Unzip artifact for deployment
-        run: |
-          unzip release.zip
-          rm release.zip
+#       - name: Unzip artifact for deployment
+#         run: |
+#           unzip release.zip
+#           rm release.zip
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+#       - name: Login to Azure
+#         uses: azure/login@v1
+#         with:
+#           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure Functions
-        uses: Azure/functions-action@v1
-        with:
-          app-name: func-azmeter-api
-          package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}
+#       - name: Deploy to Azure Functions
+#         uses: Azure/functions-action@v1
+#         with:
+#           app-name: func-azmeter-api
+#           package: ${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}

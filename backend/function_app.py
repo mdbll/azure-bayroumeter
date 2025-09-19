@@ -90,3 +90,28 @@ def get_votes(req: func.HttpRequest) -> func.HttpResponse:
         mimetype="application/json",
         status_code=200
     )
+
+
+@app.route(route="login", methods=["POST"])
+def login(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        body = req.get_json()
+    except ValueError:
+        return func.HttpResponse("Corps JSON invalide", status_code=400)
+
+    email = body.get("email")
+    if not email:
+        return func.HttpResponse("Email requis", status_code=400)
+
+    # Vérifier si l’utilisateur existe
+    try:
+        user_doc = users.read_item(item=email, partition_key=email)
+    except exceptions.CosmosResourceNotFoundError:
+        return func.HttpResponse("Utilisateur non trouvé", status_code=404)
+
+    # Retourner les infos utilisateur
+    return func.HttpResponse(
+        json.dumps(user_doc),
+        mimetype="application/json",
+        status_code=200
+    )
