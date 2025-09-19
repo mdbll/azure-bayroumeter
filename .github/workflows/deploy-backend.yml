@@ -47,4 +47,5 @@ jobs:
       - name: Deploy with Azure Functions Core Tools
         run: |
           cd backend
-          func azure functionapp publish func-azmeter-api
+          func azure functionapp publish func-azmeter-api --python
+
