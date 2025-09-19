@@ -1,4 +1,15 @@
+# Ignorer les environnements virtuels
 .venv/
 venv/
-.vscode/
+
+# Ignorer les caches
 __pycache__/
+*.pyc
+
+# Ignorer VSCode et autres
+.vscode/
+.git/
+.gitignore
+
+# On garde uniquement le code et requirements.txt
+local.settings.json
