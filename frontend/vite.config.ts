@@ -11,4 +11,13 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://func-azmeter-api-e8bxdwb8f3d0bhhq.francecentral-01.azurewebsites.net",
+        changeOrigin: true,
+        secure: true,
+      },
+    },
+  },
 })

@@ -1,11 +1,21 @@
-import { Button } from "@/components/ui/button"
+import { Routes, Route, Navigate } from "react-router-dom";
+import AuthenticationPage from "./pages/Authentication";
+import VotePage from "./pages/Vote";
+import ProtectedRoute from "./components/ProtectedRoute";
 
-function App() {
+export default function App() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center">
-      <Button>Click me</Button>
-    </div>
-  )
+    <Routes>
+      <Route path="/" element={<AuthenticationPage />} />
+      <Route
+        path="/vote"
+        element={
+          <ProtectedRoute>
+            <VotePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" />} />
+    </Routes>
+  );
 }
-
-export default App

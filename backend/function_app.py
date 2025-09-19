@@ -28,27 +28,39 @@ votes = db.get_container_client(VOTES_CONTAINER)
 
 @app.route(route="user", methods=["POST"])
 def create_user(req: func.HttpRequest) -> func.HttpResponse:
-    body = req.get_json()
+    try:
+        body = req.get_json()
+    except ValueError:
+        return func.HttpResponse("Corps JSON invalide", status_code=400)
+
     pseudo, email = body.get("pseudo"), body.get("email")
 
     if not pseudo or not email:
         return func.HttpResponse("Pseudo et email requis", status_code=400)
 
-    # L'email est utilisé comme id + partitionKey
-    doc = {
-        "id": email,
-        "pseudo": pseudo,
-        "email": email
-    }
+    # Vérifier si l'utilisateur existe déjà
+    try:
+        users.read_item(item=email, partition_key=email)
+        # Si aucun exception → l'utilisateur existe déjà
+        return func.HttpResponse(
+            "Utilisateur déjà existant",
+            status_code=409
+        )
+    except exceptions.CosmosResourceNotFoundError:
+        # Utilisateur n'existe pas → on le crée
+        doc = {
+            "id": email,
+            "pseudo": pseudo,
+            "email": email
+        }
 
-    # Cosmos déduit la partitionKey automatiquement à partir de "id"
-    users.upsert_item(doc)
+        users.create_item(doc)
 
-    return func.HttpResponse(
-        json.dumps(doc),
-        mimetype="application/json",
-        status_code=201
-    )
+        return func.HttpResponse(
+            json.dumps(doc),
+            mimetype="application/json",
+            status_code=201
+        )
 
 
 @app.route(route="vote", methods=["POST"])
