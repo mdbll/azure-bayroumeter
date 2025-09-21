@@ -16,7 +16,7 @@ L’application est composée de deux parties :
 
 ### Schéma d’architecture
 
-<img src="./img/archi.png" alt="Architecture" width="400"/>
+<img src="./img/archi.png" alt="Architecture" width="200"/>
 
 ---
 
